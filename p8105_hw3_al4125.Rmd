@@ -159,3 +159,44 @@ y = "Age (years)"
 ```
 Count(), pivot_wider(), and knitr::kable() were used to make a table of the number of men and women in each education category. Most participants were in the "More than high school" category, with 59 women and 56 men. The "Less than high school" category had a similar number of women and men (28 and 27), but the "High school equivalent" category had more men than women (35 and 23). Geom_boxplot() and facet_grid() were used to show the age distribution for men and women in each education category. Participants in the "More than high school" category were younger than the other two categories, with median ages of around 40 years. In the "Less than high school" category, men and women had similar ages, with median ages of around 60 years. In the "High school equivalent" category, women were older than men, with a median age of approximately 62 compared to approximately 53 years.
 
+```{r, message = FALSE}
+# Total activity for each participant
+nhanes_df |>
+group_by(seqn, sex, age, education) |>
+summarize(total_activity = sum(mims)) |>
+ggplot(aes(x = age, y = total_activity, color = sex)) +
+geom_point(alpha = .5) +
+geom_smooth(se = FALSE) +
+facet_grid(. ~ education) +
+labs(
+title = "Total daily activity by age, sex, and education",
+x = "Age (years)",
+y = "Total activity (MIMS)",
+color = "Sex"
+)
+```
+
+Group_by() and summarize() were used to add up the activity across all the minutes for each participant. Geom_smooth() was used to add the trend lines, and facet_grid() was used to make a separate panel for each education category. Across all three categories, total activity decreased as age increased. In the "High school equivalent" and "More than high school" categories, women were more active than men at most ages. In the "Less than high school" category, women were more active than men at younger ages, but men were more active than women between the ages of 50 and 60 years old.
+
+```{r, message = FALSE, fig.width = 8}
+# Average activity at each minute of the day
+nhanes_df |>
+group_by(education, sex, minute) |>
+summarize(mean_mims = mean(mims)) |>
+ggplot(aes(x = minute, y = mean_mims, color = sex)) +
+geom_line(alpha = .5) +
+geom_smooth(se = FALSE) +
+facet_grid(. ~ education) +
+scale_x_continuous(
+breaks = c(0, 360, 720, 1080, 1440),
+labels = c("12am", "6am", "12pm", "6pm", "12am")) +
+labs(
+title = "24-hour activity by education and sex",
+x = "Time of day",
+y = "Average activity (MIMS)",
+color = "Sex"
+) +
+theme(legend.position = "bottom")
+```
+
+Group_by() and summarize() were used to find the average activity at each minute of the day for men and women in each education category, and geom_smooth() was used to add trend lines. In all three categories, activity was lowest overnight from approximately 4 to 5am, and then increased quickly in the morning. It stayed high during the day, and decreased in the evening. In the "Less than high school" category, activity peaked around noon and then slowly decreased, and men and women had similar activity levels. In the "High school equivalent" and "More than high school" categories, women were more active than men during the day, and this difference was largest in the "More than high school" category. People in the "More than high school" category also stayed active later on into the evening.
